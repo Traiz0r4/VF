@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import time
 import datetime
 import pandas as pd
+from .. import views
 
 iherb_url = 'https://ru.iherb.com/'
 start_time = time.time()
@@ -16,8 +17,8 @@ globalchoice = []
 top_twelve = []
 
 
-def main():  # основная функция
-    inquiry = input("Введите ваш запрос:\n")  # ввод запроса
+def main(searchzapros):  # основная функция
+    inquiry = searchzapros # ввод запроса
     inquiry = inquiry.replace(" ", "%20")
     href = 'https://ru.iherb.com/' + f'search?kw={inquiry}&cids=1855'  # переход по ссылке поиска
 
