@@ -19,7 +19,7 @@ def get_search(request, search_id):
 
 
 @api.post("/search")
-def create_search(request, search: schemas.Search):
+def create_search(request, search: schemas.GetSearch):
     cur_search = models.Search.objects.create(**search.dict())
     # TODO: get from IHerb best products
 
@@ -27,7 +27,7 @@ def create_search(request, search: schemas.Search):
     for product in products:
         product["search_id"] = cur_search.pk
 
-    return cur_search
+    return "[awdawdawda]"
 
 
 @api.post("/product")

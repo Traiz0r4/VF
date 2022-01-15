@@ -9,6 +9,12 @@ class Search(Schema):
     max_price: int
 
 
+class GetSearch(Schema):
+    search_text: str
+    min_price: int
+    max_price: int
+
+
 class Product(Schema):
     id: int
     search_id: int

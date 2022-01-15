@@ -19,11 +19,14 @@
             <header class="header">
                 <div class="header__menu menu">
                     <a href="" class="logo">VF</a>
-                    <div class="search-box">
-                        <form method="post">
+                    <div   class="search-box">
+                        <form action="/api/search" target=_blank method="post">
                             {% csrf_token %}
-                            {{ form.search }}
-
+                            {{ form.search_text }}
+                            <p class = price-range>
+                            {{ form.min_price }}
+                            {{ form.max_price }}
+                                </p>
                             <button type="submit">
                             <a class="search-btn">Найти</a>
                             </button>
