@@ -20,8 +20,14 @@
                 <div class="header__menu menu">
                     <a href="" class="logo">VF</a>
                     <div class="search-box">
-                        <input type="text" placeholder="Введите для поиска...">
-                        <a href="#" class="search-btn">Найти</a>
+                        <form method="post">
+                            {% csrf_token %}
+                            {{ form.search }}
+
+                            <button type="submit">
+                            <a class="search-btn">Найти</a>
+                            </button>
+                        </form>
                     </div>
 
                 </div>
