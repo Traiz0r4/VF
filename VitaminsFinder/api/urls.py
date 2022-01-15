@@ -1,5 +1,6 @@
+from django.contrib import admin
+from django.urls import path
 from typing import List
-
 from django.shortcuts import get_object_or_404
 from ninja import NinjaAPI
 from . import models, schemas
@@ -39,3 +40,8 @@ def get_products_of_search(request, search_id):
     return models.Product.objects.filter(search_id=search_id)
 
 
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('', api.urls)
+]
