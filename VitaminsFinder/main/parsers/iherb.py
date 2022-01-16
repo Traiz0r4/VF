@@ -3,6 +3,8 @@ from bs4 import BeautifulSoup
 import time
 import datetime
 import pandas as pd
+import openpyxl as ox
+
 
 
 iherb_url = 'https://ru.iherb.com/'
@@ -11,26 +13,18 @@ cur_time = datetime.datetime.now().strftime("%d_%m_%Y_%H_%M")
 headers = {
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:92.0) Gecko/20100101 Firefox/92.0'}
-product_data = []
+
 globalchoice = []
 
-top_twelve = []# СЮДА ВСЕ СОХАРНЯЕТСЯ, В СПИСОК СЛОВАРЕЙ
+top_twelve = []
 
 
-def main(searchzapros):  # основная функция
-    inquiry = searchzapros # ввод запроса
+def main(inquiry):  # основная функция
+    # inquiry= input("Введите ваш запрос:\n") #ввод запроса
     inquiry = inquiry.replace(" ", "%20")
-    href = 'https://ru.iherb.com/' + f'search?kw={inquiry}&cids=1855'+'&ranges=2'  # переход по ссылке поиска
+    href = 'https://ru.iherb.com/' + f'search?kw={inquiry}&cids=1855'  # переход по ссылке поиска
 
-    sol = input('\nВы хотите использовать фильтры? д/н\n')
-    if sol.lower() == 'д' or sol.lower() == 'l':
-        url = filtration(
-            href)  # (*) Функция вызова функций фильтрации, сюда же вернеться значение с которым мы и дальше будем работать
-        # url=href
-    else:
-        print('Результат без использования фильтрации')
-        url = href
-
+    url = href
     response = requests.get(url, headers=headers)
     soup = BeautifulSoup(response.text, 'lxml')
     all_product_links = soup.find_all('a', class_='absolute-link product-link')
@@ -44,8 +38,8 @@ def main(searchzapros):  # основная функция
 
         print("Цена по возрастанию")
         made_url(url + f'&sr=2')
-        report()
-        save(inquiry, start_time)
+        finish_time = time.time()
+        save(inquiry, start_time, finish_time)
     # --------------------------------------------
 
 
@@ -73,18 +67,19 @@ def parsing(all_product_links):
                     print(f'Обрабатываем товар {counter}')
                     print(f"href: {all_product_links[href]['href']}")
                     name_of_product = soup.find(id='name').text  # имя продукта
-                    dict["name_of_product"] = name_of_product
-                    dict["href"] = all_product_links[href]['href']
+                    dict["Название продукта"] = name_of_product
+                    dict["Ссылка"] = all_product_links[href]['href']
                     try:
                         new_price = soup.find('b', class_='s24').text
                         old_price = soup.find(id='price').text
-                        dict["new_price"] = new_price
-                        dict["old_price"] = old_price
+                        dict["Цена со скидкой"] = new_price
+                        dict["Цена"] = old_price
                     except:
                         old_price = soup.find(id='price', class_='col-xs-15 col-md-15 price our-price').text
-                        dict["old_price"] = old_price
+                        dict["Цена"] = old_price
+                        dict["Цена со скидкой"] = "-"
                     company = soup.find("span", itemprop="name").find("bdi").text
-                    dict["company"] = company
+                    dict["Производитель"] = company
                     try:
                         amount_of_capsulse = soup.find("div",
                                                        class_="attribute-group-количество-в-упаковке attribute-tile-group").find_all(
@@ -100,25 +95,25 @@ def parsing(all_product_links):
                             capsulse = name_of_product.split(",")[-1]
                     mark = (soup.find('a', class_='stars'))['title'][0:5]
 
-                    dict["mark"] = mark
-                    dict["amount_of_capsulse"] = capsulse
-                    dict["amount_of_comments"] = comments
+                    dict["Рейтинг"] = mark
+                    dict["Капсулы"] = capsulse
+                    dict["Отзывы"] = comments
                     solution = filter_name(name_of_product, top_twelve)
-                    print(f'solution={solution}')
                     if solution == False:
                         print("Добавляем товар в словарь бестселлеров")
+                        print("--------------------------")
                         top_twelve.append(dict)
                         counter += 1
         else:
+
             break
 
 
 def filter_name(name, product_list):
     print("Проверяем на наличие в словаре")
-    print(f'len: {len(product_list)}')
     if len(product_list) != 0:
         for elem in range(len(product_list)):
-            if name == product_list[elem]["name_of_product"]:
+            if name == product_list[elem]["Название продукта"]:
                 return (True)
             else:
                 return (False)
@@ -126,57 +121,65 @@ def filter_name(name, product_list):
         return (False)
 
 
-def save(inquiry, start_time):# ФУНКЦИЯ СОХРАНЕНИЯ
-    # -----------
-    # inquiry=inquiry
-    search_info = {'Дата и Время запроса:': [time.ctime()],
-                   'Запрос пользователя:': [inquiry],
-                   "Фильтры:": [globalchoice]}
-
-    sheet2 = pd.DataFrame(search_info)
-    sheet1 = pd.DataFrame(top_twelve)  # сохраням на третий лист данные из топ 5 бесцеллеров и цены по возрастанию
-    # ---------------------------------------------------------------------
+def save(inquiry, start_time, finish_time):
+    # ----------
+    inquiry = inquiry.replace("%20", " ")
+    df = pd.DataFrame(top_twelve)
     print("Сохраняем все в отчет.")
-    # пишем в наш файл данные----------------------------------------------
-    sheets_name = {'top_ten_products': sheet1, 'info': sheet2}
-    writer = pd.ExcelWriter(f'./report.xlsx', engine='xlsxwriter')
-    for sheet_name in sheets_name.keys():
-        sheets_name[sheet_name].to_excel(writer, sheet_name=sheet_name)
+    # ---------------------------------------------------------
+    #update_spreadsheet('././Files/otchet.xlsx', df, sheet_name='1')
+    writer = pd.ExcelWriter('././Files/report.xlsx')  # здесь путь настроить
+    # ---------------------------------------------------------
+    df.to_excel(writer, sheet_name='inquiry', index=False, na_rep='NaN')
+
+    # column_width = max(df['Название продукта'].astype(str).map(len).max(), len('Название продукта'))
+    # col_idx = df.columns.get_loc('Название продукта')
+    # writer.sheets[inquiry].set_column(col_idx, col_idx, column_width-5)
+
+    # col_idx = df.columns.get_loc('Ссылка')
+    # writer.sheets[inquiry].set_column(col_idx, col_idx, 10)
+
+    # col_idx = df.columns.get_loc('Цена со скидкой')
+    # writer.sheets[inquiry].set_column(col_idx, col_idx, 10)
+
+    # col_idx = df.columns.get_loc('Цена')
+    # writer.sheets[inquiry].set_column(col_idx, col_idx, 12)
+
+    # col_idx = df.columns.get_loc('Производитель')
+    # writer.sheets[inquiry].set_column(col_idx, col_idx, 8)
+
+    # col_idx = df.columns.get_loc('Рейтинг')
+    # writer.sheets[inquiry].set_column(col_idx, col_idx, 8)
+
+    # column_width = max(df['Капсулы'].astype(str).map(len).max(), len('Капсулы'))
+    # col_idx = df.columns.get_loc('Капсулы')
+    # writer.sheets[inquiry].set_column(col_idx, col_idx, column_width)
+
+    # col_idx = df.columns.get_loc('Отзывы')
+    # writer.sheets[inquiry].set_column(col_idx, col_idx, 8)
+
+    print("Сохраняем все в отчет.")
     writer.save()
-    # -----------
-    print("Время выполнения:", round(time.time() - start_time))
 
-# Функция фильтрации итогово отчета
-def report():
-    report = {
-        1: "name_of_product",
-        2: "mark",
-        3: "href",
-        4: "old_price",
-        5: "new_price",
-        6: "company",
-        7: "amount_of_capsulse",
-        8: "amount_of_comments",
-    }
+    print("Время парсинга данных:", round(finish_time - start_time))
 
-    h = input(
-        "Выберите параметры НЕ вносимые в отчет:\n 1)Наименование товара\n 2)Рейтинг\n 3)Cсылка\n 4)Цена\n 5)Цена со скидкой\n 6)Компания производитель\n 7)Количество штук в упаковке\n 8)Количество положительных комментариев\nДля окончания ввода, просто нажмите Enter...\n")
-
-    while h != '':
-        for k, v in report.items():
-            if int(h) == k:
-                sort_and_del(v)
-        h = input("Хорошо, выберите еще (для прекращения просто нажмите Enter)")
+# Чтобы отдельно проверить роботоспособность расскоментируй:
+# if __name__=='__main__':
+#     main()
 
 
-# функция удаления данных из итогово отчета
-def sort_and_del(v):
-    for elem in range(len(product_data)):
-        try:
-            del product_data[elem][v]
-        except:
-            pass
+def update_spreadsheet(path: str, _df, starcol: int = 1, startrow: int = 1, sheet_name: str = "ToUpdate"):
+    '''
 
-
-if __name__ == '__main__':
-    main()
+    :param path: Путь до файла Excel
+    :param _df: Датафрейм Pandas для записи
+    :param starcol: Стартовая колонка в таблице листа Excel, куда буду писать данные
+    :param startrow: Стартовая строка в таблице листа Excel, куда буду писать данные
+    :param sheet_name: Имя листа в таблице Excel, куда буду писать данные
+    :return:
+    '''
+    wb = ox.load_workbook(path)
+    for ir in range(0, len(_df)):
+        for ic in range(0, len(_df.iloc[ir])):
+            wb[sheet_name].cell(startrow + ir, starcol + ic).value = _df.iloc[ir][ic]
+    wb.save(path)

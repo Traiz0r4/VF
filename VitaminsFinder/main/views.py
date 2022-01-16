@@ -21,7 +21,7 @@ def index(request):
             searchzapros = (form.cleaned_data['search_text'])
             min_price = (form.cleaned_data['min_price'])
             max_price = (form.cleaned_data['max_price'])
-            iherb.main(searchzapros, min_price, max_price)
+            iherb.main(searchzapros)
 
 
 
@@ -43,7 +43,7 @@ def about(request):
 
 def downloadfile(req):
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    filename = 'test.xlsx'
+    filename = 'report.xlsx'
     filepath = base_dir + '/Files/' + filename
     thefile = filepath
     filename = os.path.basename(thefile)
