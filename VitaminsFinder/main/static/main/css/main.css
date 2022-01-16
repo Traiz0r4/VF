@@ -253,3 +253,7 @@ button, span {
 	min-height: calc(100vh - 150px);
     padding-bottom: 50px;
 }
+
+.megatable{
+    display: inline-flex;
+}
