@@ -21,16 +21,6 @@ def main(searchzapros):  # основная функция
     inquiry = searchzapros # ввод запроса
     inquiry = inquiry.replace(" ", "%20")
     href = 'https://ru.iherb.com/' + f'search?kw={inquiry}&cids=1855'+'&ranges=2'  # переход по ссылке поиска
-
-    sol = input('\nВы хотите использовать фильтры? д/н\n')
-    if sol.lower() == 'д' or sol.lower() == 'l':
-        url = filtration(
-            href)  # (*) Функция вызова функций фильтрации, сюда же вернеться значение с которым мы и дальше будем работать
-        # url=href
-    else:
-        print('Результат без использования фильтрации')
-        url = href
-
     response = requests.get(url, headers=headers)
     soup = BeautifulSoup(response.text, 'lxml')
     all_product_links = soup.find_all('a', class_='absolute-link product-link')
