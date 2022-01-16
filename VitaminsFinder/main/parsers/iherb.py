@@ -15,21 +15,12 @@ product_data = []
 globalchoice = []
 
 top_twelve = []# СЮДА ВСЕ СОХАРНЯЕТСЯ, В СПИСОК СЛОВАРЕЙ
+# inquiry="магний"
 
-
-def main(searchzapros):  # основная функция
-    inquiry = searchzapros # ввод запроса
+def main(inquiry):  # основная функция
+    # ввод запроса
     inquiry = inquiry.replace(" ", "%20")
-    href = 'https://ru.iherb.com/' + f'search?kw={inquiry}&cids=1855'+'&ranges=2'  # переход по ссылке поиска
-
-    sol = input('\nВы хотите использовать фильтры? д/н\n')
-    if sol.lower() == 'д' or sol.lower() == 'l':
-        url = filtration(
-            href)  # (*) Функция вызова функций фильтрации, сюда же вернеться значение с которым мы и дальше будем работать
-        # url=href
-    else:
-        print('Результат без использования фильтрации')
-        url = href
+    url = 'https://ru.iherb.com/' + f'search?kw={inquiry}&cids=1855'+'&ranges=2'  # переход по ссылке поиска
 
     response = requests.get(url, headers=headers)
     soup = BeautifulSoup(response.text, 'lxml')
@@ -139,7 +130,7 @@ def save(inquiry, start_time):# ФУНКЦИЯ СОХРАНЕНИЯ
     print("Сохраняем все в отчет.")
     # пишем в наш файл данные----------------------------------------------
     sheets_name = {'top_ten_products': sheet1, 'info': sheet2}
-    writer = pd.ExcelWriter(f'./report.xlsx', engine='xlsxwriter')
+    writer = pd.ExcelWriter(f'./VF-new_files/VitaminsFinder/Files/report.xlsx', engine='xlsxwriter')
     for sheet_name in sheets_name.keys():
         sheets_name[sheet_name].to_excel(writer, sheet_name=sheet_name)
     writer.save()
@@ -176,7 +167,3 @@ def sort_and_del(v):
             del product_data[elem][v]
         except:
             pass
-
-
-if __name__ == '__main__':
-    main()
