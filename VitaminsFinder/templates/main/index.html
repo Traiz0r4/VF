@@ -22,8 +22,11 @@
                     <div class="search-box">
                         <form method="post">
                             {% csrf_token %}
-                            {{ form.search }}
-
+                            {{ form.search_text }}
+                            <p class = price-range>
+                            {{ form.min_price }}
+                            {{ form.max_price }}
+                                </p>
                             <button type="submit">
                             <a class="search-btn">Найти</a>
                             </button>
@@ -45,20 +48,12 @@
                 </div>
 
                 <div class="product__container">
-                <div class="filters">
-                    <div class="filter-header"> Цена</div>
-                    <div class="price-range">
-                                <input class="range-min" type="text" placeholder="Мин" value="" data-url="/search?kw=%D1%84%D0%B5%D1%80%D1%80%D0%B8%D1%82%D0%B8%D0%BD&amp;pmin=" aria-label="до input">
-                                <span>до</span>
-                                <input class="range-max" type="text" placeholder="Макс" value="" data-url="&amp;pmax=" aria-label="Макс input">
-                                <button class="range-filter icon-recentlyviewedarrowright" aria-label="button" ></button>
-                    </div>
-                </div>
+
                 <div class="table"> </div>
 
             </div>
 
-            <a href="#" class="button__download">Скачать таблицу</a>
+            <a href="/downloadfile" filename1='test.xlsx' class="button__download"> Скачать таблицу</a>
 
 
             </main>
